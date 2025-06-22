@@ -30,10 +30,20 @@ const App = () => {
   const ADMIN_PASSWORD = process.env.REACT_APP_ADMIN_PASSWORD;
 
   // 飞书多维表格API配置 - 从环境变量获取
-  const APP_TOKEN = process.env.REACT_APP_FEISHU_APP_TOKEN;
-  const TABLE_ID = process.env.REACT_APP_FEISHU_TABLE_ID;
-  const APP_ID = process.env.REACT_APP_FEISHU_APP_ID;
-  const APP_SECRET = process.env.REACT_APP_FEISHU_APP_SECRET;
+  const APP_TOKEN = process.env.REACT_APP_FEISHU_APP_TOKEN || '';
+  const TABLE_ID = process.env.REACT_APP_FEISHU_TABLE_ID || '';
+  const APP_ID = process.env.REACT_APP_FEISHU_APP_ID || '';
+  const APP_SECRET = process.env.REACT_APP_FEISHU_APP_SECRET || '';
+  
+  // 在控制台输出环境变量状态，用于调试
+  useEffect(() => {
+    console.log('环境变量状态:', {
+      APP_TOKEN: APP_TOKEN ? '已设置' : '未设置',
+      TABLE_ID: TABLE_ID ? '已设置' : '未设置',
+      APP_ID: APP_ID ? '已设置' : '未设置',
+      APP_SECRET: APP_SECRET ? '已设置' : '未设置'
+    });
+  }, [APP_TOKEN, TABLE_ID, APP_ID, APP_SECRET]);
 
   // 获取访问令牌
   const getTenantAccessToken = useCallback(async () => {
