@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>环境变量检查</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: #141414;
+      color: #fff;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .card {
+      background-color: #1f1f1f;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .status {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #333;
+    }
+    .status:last-child {
+      border-bottom: none;
+    }
+    .status-label {
+      font-weight: bold;
+    }
+    .status-value {
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .status-set {
+      background-color: #52c41a;
+      color: #fff;
+    }
+    .status-unset {
+      background-color: #f5222d;
+      color: #fff;
+    }
+    .api-test {
+      margin-top: 30px;
+    }
+    button {
+      background-color: #1890ff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background-color: #40a9ff;
+    }
+    pre {
+      background-color: #000;
+      padding: 15px;
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>飞书Prompt管理工具 - 环境变量检查</h1>
+  
+  <div class="card">
+    <h2>前端环境变量状态</h2>
+    <div id="frontend-env"></div>
+  </div>
+
+  <div class="card api-test">
+    <h2>后端环境变量检查</h2>
+    <button id="check-backend">检查后端环境变量</button>
+    <div id="backend-result" style="margin-top: 15px;">
+      <pre id="backend-env">点击按钮检查后端环境变量...</pre>
+    </div>
+  </div>
+
+  <div class="card api-test">
+    <h2>API代理测试</h2>
+    <button id="test-proxy">测试API代理</button>
+    <div id="proxy-result" style="margin-top: 15px;">
+      <pre id="proxy-response">点击按钮测试API代理...</pre>
+    </div>
+  </div>
+
+  <script>
+    // 检查前端环境变量
+    function checkFrontendEnv() {
+      const envVars = [
+        'REACT_APP_FEISHU_APP_ID',
+        'REACT_APP_FEISHU_APP_SECRET',
+        'REACT_APP_FEISHU_APP_TOKEN',
+        'REACT_APP_FEISHU_TABLE_ID',
+        'REACT_APP_ADMIN_PASSWORD'
+      ];
+
+      const envContainer = document.getElementById('frontend-env');
+      envContainer.innerHTML = '';
+
+      envVars.forEach(varName => {
+        const value = window.env && window.env[varName] ? '已设置' : '未设置';
+        const statusClass = value === '已设置' ? 'status-set' : 'status-unset';
+        
+        const statusDiv = document.createElement('div');
+        statusDiv.className = 'status';
+        statusDiv.innerHTML = `
+          <span class="status-label">${varName}</span>
+          <span class="status-value ${statusClass}">${value}</span>
+        `;
+        
+        envContainer.appendChild(statusDiv);
+      });
+
+      // 添加NODE_ENV
+      const nodeEnv = process.env.NODE_ENV || '未设置';
+      const nodeEnvDiv = document.createElement('div');
+      nodeEnvDiv.className = 'status';
+      nodeEnvDiv.innerHTML = `
+        <span class="status-label">NODE_ENV</span>
+        <span class="status-value status-set">${nodeEnv}</span>
+      `;
+      envContainer.appendChild(nodeEnvDiv);
+    }
+
+    // 检查后端环境变量
+    document.getElementById('check-backend').addEventListener('click', async () => {
+      const resultElement = document.getElementById('backend-env');
+      resultElement.textContent = '正在检查...';
+      
+      try {
+        const response = await fetch('/api/debug');
+        const data = await response.json();
+        resultElement.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        resultElement.textContent = `检查失败: ${error.message}`;
+      }
+    });
+
+    // 测试API代理
+    document.getElementById('test-proxy').addEventListener('click', async () => {
+      const resultElement = document.getElementById('proxy-response');
+      resultElement.textContent = '正在测试...';
+      
+      try {
+        // 尝试获取tenant_access_token作为测试
+        const response = await fetch('/api/proxy/open-apis/auth/v3/tenant_access_token/internal', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            app_id: window.env?.REACT_APP_FEISHU_APP_ID || 'test_app_id',
+            app_secret: window.env?.REACT_APP_FEISHU_APP_SECRET || 'test_app_secret'
+          })
+        });
+        
+        const data = await response.json();
+        resultElement.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        resultElement.textContent = `测试失败: ${error.message}`;
+      }
+    });
+
+    // 初始化
+    window.onload = function() {
+      // 创建全局环境变量对象
+      window.env = {};
+      
+      // 从window._env_中获取环境变量（如果存在）
+      if (window._env_) {
+        window.env = window._env_;
+      }
+      
+      // 检查前端环境变量
+      checkFrontendEnv();
+    };
+  </script>
+</body>
+</html>

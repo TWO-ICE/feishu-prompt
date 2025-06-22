@@ -27,13 +27,13 @@ const App = () => {
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
   const [passwordForm] = Form.useForm();
   const [pendingAction, setPendingAction] = useState(null);
-  const ADMIN_PASSWORD = process.env.REACT_APP_ADMIN_PASSWORD;
 
-  // 飞书多维表格API配置 - 从环境变量获取
-  const APP_TOKEN = process.env.REACT_APP_FEISHU_APP_TOKEN || '';
-  const TABLE_ID = process.env.REACT_APP_FEISHU_TABLE_ID || '';
-  const APP_ID = process.env.REACT_APP_FEISHU_APP_ID || '';
-  const APP_SECRET = process.env.REACT_APP_FEISHU_APP_SECRET || '';
+  // 飞书多维表格API配置 - 优先从window._env_获取环境变量，然后再尝试从process.env获取
+  const APP_TOKEN = (window._env_ && window._env_.REACT_APP_FEISHU_APP_TOKEN) || process.env.REACT_APP_FEISHU_APP_TOKEN || '';
+  const TABLE_ID = (window._env_ && window._env_.REACT_APP_FEISHU_TABLE_ID) || process.env.REACT_APP_FEISHU_TABLE_ID || '';
+  const APP_ID = (window._env_ && window._env_.REACT_APP_FEISHU_APP_ID) || process.env.REACT_APP_FEISHU_APP_ID || '';
+  const APP_SECRET = (window._env_ && window._env_.REACT_APP_FEISHU_APP_SECRET) || process.env.REACT_APP_FEISHU_APP_SECRET || '';
+  const ADMIN_PASSWORD = (window._env_ && window._env_.REACT_APP_ADMIN_PASSWORD) || process.env.REACT_APP_ADMIN_PASSWORD;
   
   // 在控制台输出环境变量状态，用于调试
   useEffect(() => {
@@ -41,9 +41,10 @@ const App = () => {
       APP_TOKEN: APP_TOKEN ? '已设置' : '未设置',
       TABLE_ID: TABLE_ID ? '已设置' : '未设置',
       APP_ID: APP_ID ? '已设置' : '未设置',
-      APP_SECRET: APP_SECRET ? '已设置' : '未设置'
+      APP_SECRET: APP_SECRET ? '已设置' : '未设置',
+      ADMIN_PASSWORD: ADMIN_PASSWORD ? '已设置' : '未设置'
     });
-  }, [APP_TOKEN, TABLE_ID, APP_ID, APP_SECRET]);
+  }, [APP_TOKEN, TABLE_ID, APP_ID, APP_SECRET, ADMIN_PASSWORD]);
 
   // 获取访问令牌
   const getTenantAccessToken = useCallback(async () => {
