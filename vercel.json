@@ -7,17 +7,9 @@
       "config": {
         "distDir": "build"
       }
-    },
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
-    {
-      "src": "/api/proxy/(.*)",
-      "dest": "/api/proxy/$1"
-    },
     {
       "src": "/api/(.*)",
       "dest": "/api/$1"
@@ -26,12 +18,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "REACT_APP_FEISHU_APP_ID": "@react_app_feishu_app_id",
-    "REACT_APP_FEISHU_APP_SECRET": "@react_app_feishu_app_secret",
-    "REACT_APP_FEISHU_APP_TOKEN": "@react_app_feishu_app_token",
-    "REACT_APP_FEISHU_TABLE_ID": "@react_app_feishu_table_id",
-    "REACT_APP_ADMIN_PASSWORD": "@react_app_admin_password"
-  }
+  ]
 }
